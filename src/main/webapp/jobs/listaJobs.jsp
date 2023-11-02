@@ -22,10 +22,12 @@
                         nuevo Trabajo</a>
                 </div>
             </div>
-            <% if (request.getParameter("msg") != null) {%>
-            <div class="alert alert-success" role="alert"><%=request.getParameter("msg")%>
+            <% if (session.getAttribute("msg") != null) {%>
+            <div class="alert alert-success" role="alert"><%=session.getAttribute("msg")%>
             </div>
-            <% } %>
+            <%
+                session.removeAttribute("msg");
+            } %>
             <% if (request.getParameter("err") != null) {%>
             <div class="alert alert-danger" role="alert"><%=request.getParameter("err")%>
             </div>

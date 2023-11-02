@@ -4,6 +4,8 @@ package com.example.webapphr2.Daos;
 import com.example.webapphr2.Beans.Department;
 import com.example.webapphr2.Beans.Employee;
 import com.example.webapphr2.Beans.Job;
+import com.example.webapphr2.Dto.EmpleadosPorDepartamentoDto;
+import com.example.webapphr2.Dto.EmpleadosPorRegionDto;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -177,5 +179,112 @@ public class EmployeeDao extends DaoBase {
         department.setDepartmentId(rs.getInt(11));
         department.setDepartmentName(rs.getString("d.department_name"));
         employee.setDepartment(department);
+    }
+
+    public boolean validarUsuarioPassword(String username, String password){
+
+        String sql = "SELECT * FROM employees_credentials where email = ? and password = ?";
+
+        boolean exito = false;
+
+        try(Connection connection = getConection();
+            PreparedStatement pstmt = connection.prepareStatement(sql)){
+
+            pstmt.setString(1,username);
+            pstmt.setString(2,password);
+
+            try(ResultSet rs = pstmt.executeQuery()){
+                if(rs.next()){
+                    exito = true;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return exito;
+    }
+
+    public boolean validarUsuarioPasswordHashed(String username, String password){
+
+        String sql = "SELECT * FROM employees_credentials where email = ? and password_hashed = sha2(?,256)";
+
+        boolean exito = false;
+
+        try(Connection connection = getConection();
+            PreparedStatement pstmt = connection.prepareStatement(sql)){
+
+            pstmt.setString(1,username);
+            pstmt.setString(2,password);
+
+            try(ResultSet rs = pstmt.executeQuery()){
+                if(rs.next()){
+                    exito = true;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return exito;
+    }
+
+    public Employee obtenerEmpleado(String email) {
+
+        Employee employee = null;
+
+        String sql = "SELECT * FROM employees e \n"
+                + "left join jobs j ON (j.job_id = e.job_id) \n"
+                + "left join departments d ON (d.department_id = e.department_id)\n"
+                + "left  join employees m ON (e.manager_id = m.employee_id)\n"
+                + "WHERE e.email = ?";
+
+        try (Connection conn = this.getConection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, email);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+
+                if (rs.next()) {
+                    employee = new Employee();
+                    fetchEmployeeData(employee, rs);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        return employee;
+    }
+
+    public ArrayList<EmpleadosPorRegionDto> listarEmpPorRegion(){
+
+        ArrayList<EmpleadosPorRegionDto> lista = new ArrayList<>();
+
+        String sql = "select r.region_name, count(c.country_id) as '# empleados'\n" +
+                "from employees e\n" +
+                "inner join departments d on (e.department_id = d.department_id)\n" +
+                "inner join locations l on (l.location_id = d.location_id)\n" +
+                "inner join countries c on (c.country_id = l.country_id)\n" +
+                "inner join regions r on (c.region_id = r.region_id)\n" +
+                "group by r.region_id;\n";
+
+        try (Connection conn = this.getConection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                EmpleadosPorRegionDto e = new EmpleadosPorRegionDto();
+                e.setRegion(rs.getString(1));
+                e.setCantidad(rs.getInt(2));
+                lista.add(e);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        return lista;
+
     }
 }

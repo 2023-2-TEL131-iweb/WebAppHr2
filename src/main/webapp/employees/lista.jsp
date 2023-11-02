@@ -3,6 +3,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8" %>
 <jsp:useBean id="listaEmpleados" type="java.util.ArrayList<com.example.webapphr2.Beans.Employee>" scope="request"/>
 <jsp:useBean id="textoBusqueda" scope="request" type="java.lang.String" class="java.lang.String"/>
+<jsp:useBean id="usuarioLogueado" class="com.example.webapphr2.Beans.Employee" type="Employee" scope="session" />
 <!DOCTYPE html>
 <html>
     <head>
@@ -54,8 +55,10 @@
                         <th>Commision</th>
                         <th>Manager ID</th>
                         <th>Department ID</th>
+                        <% if(usuarioLogueado != null && usuarioLogueado.getEmployeeId() > 0) {%>
                         <th></th>
                         <th></th>
+                        <% } %>
                     </tr>
                 </thead>
                 <tbody>
@@ -80,6 +83,7 @@
                         </td>
                         <td><%= e.getDepartment().getDepartmentName()%>
                         </td>
+                        <% if(usuarioLogueado != null && usuarioLogueado.getEmployeeId() > 0) {%>
                         <td>
                             <a href="<%=request.getContextPath()%>/EmployeeServlet?action=editar&id=<%= e.getEmployeeId()%>"
                                type="button" class="btn btn-primary">
@@ -93,6 +97,7 @@
                                 <i class="bi bi-trash"></i>
                             </a>
                         </td>
+                        <% } %>
                     </tr>
                     <%
                             i++;

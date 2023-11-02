@@ -12,6 +12,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -44,32 +45,38 @@ public class EmployeeServlet extends HttpServlet {
                 view.forward(request, response);
                 break;
             case "editar":
-                if (request.getParameter("id") != null) {
-                    String employeeIdString = request.getParameter("id");
-                    int employeeId = 0;
-                    try {
-                        employeeId = Integer.parseInt(employeeIdString);
-                    } catch (NumberFormatException ex) {
-                        response.sendRedirect("EmployeeServlet");
-                    }
+                HttpSession httpSession = request.getSession();
+                Employee employee = (Employee) httpSession.getAttribute("usuarioLogueado");
 
-                    Employee emp = employeeDao.obtenerEmpleado(employeeId);
+                if(employee != null && employee.getEmployeeId() > 0) {
+                    if (request.getParameter("id") != null) {
+                        String employeeIdString = request.getParameter("id");
+                        int employeeId = 0;
+                        try {
+                            employeeId = Integer.parseInt(employeeIdString);
+                        } catch (NumberFormatException ex) {
+                            response.sendRedirect("EmployeeServlet");
+                        }
 
-                    if (emp != null) {
-                        request.setAttribute("empleado", emp);
-                        request.setAttribute("listaTrabajos", jobDao.listarTrabajos());
-                        request.setAttribute("listaDepartamentos", departmentDao.listaDepartamentos());
-                        request.setAttribute("listaJefes", employeeDao.listarEmpleados());
-                        view = request.getRequestDispatcher("employees/formularioEditar.jsp");
-                        view.forward(request, response);
+                        Employee emp = employeeDao.obtenerEmpleado(employeeId);
+
+                        if (emp != null) {
+                            request.setAttribute("empleado", emp);
+                            request.setAttribute("listaTrabajos", jobDao.listarTrabajos());
+                            request.setAttribute("listaDepartamentos", departmentDao.listaDepartamentos());
+                            request.setAttribute("listaJefes", employeeDao.listarEmpleados());
+                            view = request.getRequestDispatcher("employees/formularioEditar.jsp");
+                            view.forward(request, response);
+                        } else {
+                            response.sendRedirect("EmployeeServlet");
+                        }
+
                     } else {
                         response.sendRedirect("EmployeeServlet");
                     }
-
                 } else {
                     response.sendRedirect("EmployeeServlet");
                 }
-
                 break;
             case "borrar":
                 if (request.getParameter("id") != null) {

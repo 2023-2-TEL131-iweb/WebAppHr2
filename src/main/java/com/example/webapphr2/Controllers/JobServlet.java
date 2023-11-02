@@ -9,6 +9,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -43,14 +44,18 @@ public class JobServlet extends HttpServlet {
                 if (job == null) {
                     try {
                         jobDao.crearTrabajo(jobId, jobTitle, minSalary, maxSalary);
-                        response.sendRedirect(request.getContextPath() + "/JobServlet?msg=Trabajo creado exitosamente");
+                        HttpSession httpSession = request.getSession();
+                        httpSession.setAttribute("msg","Trabajo creado exitosamente");
+                        response.sendRedirect(request.getContextPath() + "/JobServlet");
                     } catch (SQLException e) {
                         response.sendRedirect(request.getContextPath() + "/JobServlet?err=Error al actualizar el trabajo");
                     }
                 } else {
                     try {
                         jobDao.actualizarTrabajo(jobId, jobTitle, minSalary, maxSalary);
-                        response.sendRedirect(request.getContextPath() + "/JobServlet?msg=Trabajo editado exitosamente");
+                        HttpSession httpSession = request.getSession();
+                        httpSession.setAttribute("msg","Trabajo editado exitosamente");
+                        response.sendRedirect(request.getContextPath() + "/JobServlet");
                     } catch (SQLException e) {
                         response.sendRedirect(request.getContextPath() + "/JobServlet?err=Error al actualizar el trabajo");
                     }
